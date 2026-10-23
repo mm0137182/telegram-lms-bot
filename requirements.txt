@@ -1,0 +1,2 @@
+# No external dependencies — bot uses only Python stdlib
+# This file is intentionally empty
