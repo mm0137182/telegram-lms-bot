@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: telegram-lms-bot
+    restart: unless-stopped
+    environment:
+      - BOT_DATA_DIR=/app/data
+    volumes:
+      - ./data:/app/data
+    # Health check: verify bot is running
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import json; json.load(open('/app/data/telegram_commands.json')); print('ok')"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
