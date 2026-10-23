@@ -54,8 +54,17 @@ COMMANDS = {
 
 
 def http_get_json(url, timeout=HTTP_TIMEOUT):
+    return http_get_json_with_headers(url, timeout)
+
+
+def http_get_json_with_headers(url, timeout=HTTP_TIMEOUT, token=None, school_id=None):
+    """HTTP GET with optional LMS auth headers."""
     try:
         req = urllib.request.Request(url)
+        if token:
+            req.add_header("Authorization", f"Bearer {token}")
+        if school_id:
+            req.add_header("x-school-id", str(school_id))
         resp = urllib.request.urlopen(req, timeout=timeout)
         body = resp.read()
         resp.close()
@@ -340,8 +349,10 @@ def upload_pending_files():
         print(f"  ❌ لا يمكن تحميل رمز الوثيقة: {e}")
         return False, 0
 
-    # Get user profile
-    user_info = http_get_json(f"https://apicore.ibnroshd.edu.sa/api/Common/GetUserInfo?EducationalYearID=5")
+    # Get user profile with auth token
+    user_info = http_get_json_with_headers(
+        f"https://apicore.ibnroshd.edu.sa/api/Common/GetUserInfo?EducationalYearID=5",
+        token=token, school_id=school_id)
     employee_id = 5816
     teacher_id = 6600
     user_group_id = 3
@@ -354,7 +365,9 @@ def upload_pending_files():
         teacher_id = emp.get("teacherID", teacher_id)
         user_group_id = content.get("userGroupID", user_group_id)
 
-    subjects = http_get_json(f"https://apicore.ibnroshd.edu.sa/api/Common/getTeacherSubjectLookup?EducationalYearID=5&TeacherID={teacher_id}&SemesterID=1")
+    subjects = http_get_json_with_headers(
+        f"https://apicore.ibnroshd.edu.sa/api/Common/getTeacherSubjectLookup?EducationalYearID=5&TeacherID={teacher_id}&SemesterID=1",
+        token=token, school_id=school_id)
     if subjects and subjects.get("code") == "200":
         subject_list = subjects.get("content", [])
         if subject_list:
