@@ -1,0 +1,11 @@
+# Logs
+*.log
+upload_processor.log
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+Thumbs.db
