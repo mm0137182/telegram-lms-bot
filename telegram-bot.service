@@ -1,0 +1,17 @@
+[Unit]
+Description=Telegram LMS Bot (24/7)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/app/deploy
+Environment=BOT_DATA_DIR=/app/deploy/data
+ExecStart=/usr/bin/python3 /app/deploy/bot.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
