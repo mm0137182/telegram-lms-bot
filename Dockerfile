@@ -20,6 +20,10 @@ RUN mkdir -p /app/data/telegram_uploads
 
 # Set data directory (the bot uses BOT_DATA_DIR env var, defaults to /app/data)
 ENV BOT_DATA_DIR=/app/data
+ENV PORT=8080
+
+# Expose health check port
+EXPOSE 8080
 
 # Run the bot in daemon mode (continuous loop, 24/7)
 CMD ["python3", "bot.py"]

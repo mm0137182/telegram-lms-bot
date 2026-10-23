@@ -26,6 +26,9 @@ import urllib.request
 import urllib.error
 import time
 import difflib
+import threading
+import os
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from datetime import datetime
 
 # Config
@@ -570,6 +573,28 @@ def process_updates():
     return new_messages
 
 
+# ── Health Server (for Render Web Service / free tier) ──────────────────────
+def start_health_server():
+    """Start a simple HTTP server on PORT for health checks (required by Render web services)."""
+    port = int(os.environ.get("PORT", "8080"))
+
+    class HealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            if self.path == '/health':
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/plain')
+                self.end_headers()
+                self.wfile.write(b'OK')
+            else:
+                self.send_response(404)
+                self.end_headers()
+        def log_message(self, *args):
+            pass  # suppress request logs
+
+    server = HTTPServer(('0.0.0.0', port), HealthHandler)
+    server.serve_forever()
+
+
 def main():
     print(f"[{datetime.now().strftime('%H:%M:%S')}] فحص رسائل التليجرام...")
     count = process_updates()
@@ -607,6 +632,11 @@ if __name__ == "__main__":
     import sys
     print(f"[{datetime.now().strftime('%H:%M:%S')}] بدء تشغيل البوت (daemon mode)")
     print("  Telegram Bot ↔ LMS Integration — جاهز للعمل 24/7")
+    
+    # Start health-check HTTP server (required for Render Web Service free tier)
+    health_thread = threading.Thread(target=start_health_server, daemon=True)
+    health_thread.start()
+    print(f"  📡 Health server جاهز على البورت {os.environ.get('PORT', '8080')}")
     
     while True:
         try:
